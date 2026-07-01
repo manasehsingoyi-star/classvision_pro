@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../models/student.dart';
 import '../widgets/module_page.dart';
+import 'student_form_dialog.dart';
+import 'student_profile_dialog.dart';
 
 class StudentsScreen extends StatefulWidget {
   const StudentsScreen({super.key});
@@ -126,8 +128,9 @@ class _StudentsScreenState extends State<StudentsScreen> {
                       Expanded(child: Text('Student ID')),
                       Expanded(child: Text('Class')),
                       Expanded(child: Text('Program')),
+                      Expanded(child: Text('Face')),
                       Expanded(child: Text('Status')),
-                      SizedBox(width: 160, child: Text('Actions')),
+                      SizedBox(width: 190, child: Text('Actions')),
                     ],
                   ),
                 ),
@@ -168,19 +171,51 @@ class _StudentsScreenState extends State<StudentsScreen> {
                           Expanded(child: Text(student.studentClass)),
                           Expanded(
                             child: Text(
-                              student.programme.isEmpty ? '-' : student.programme,
+                              student.programme.isEmpty
+                                  ? '-'
+                                  : student.programme,
                             ),
                           ),
-                          const Expanded(
+                          Expanded(
                             child: Text(
-                              'Active',
-                              style: TextStyle(color: Colors.green),
+                              student.faceRegistered
+                                  ? 'Registered'
+                                  : 'Not Registered',
+                              style: TextStyle(
+                                color: student.faceRegistered
+                                    ? Colors.green
+                                    : Colors.red,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                          Expanded(
+                            child: Text(
+                              student.status,
+                              style: TextStyle(
+                                color: student.status == 'Active'
+                                    ? Colors.green
+                                    : Colors.orange,
+                                fontWeight: FontWeight.w600,
+                              ),
                             ),
                           ),
                           SizedBox(
-                            width: 160,
+                            width: 190,
                             child: Row(
                               children: [
+                                IconButton(
+                                  tooltip: 'View Profile',
+                                  onPressed: () {
+                                    showDialog(
+                                      context: context,
+                                      builder: (_) => StudentProfileDialog(
+                                        student: student,
+                                      ),
+                                    );
+                                  },
+                                  icon: const Icon(Icons.visibility_rounded),
+                                ),
                                 IconButton(
                                   tooltip: 'Register Face',
                                   onPressed: () => registerFace(student),
@@ -207,127 +242,6 @@ class _StudentsScreenState extends State<StudentsScreen> {
             ),
           ),
         ],
-      ),
-    );
-  }
-}
-
-class StudentFormDialog extends StatefulWidget {
-  final Function(Student) onSave;
-
-  const StudentFormDialog({super.key, required this.onSave});
-
-  @override
-  State<StudentFormDialog> createState() => _StudentFormDialogState();
-}
-
-class _StudentFormDialogState extends State<StudentFormDialog> {
-  final fullNameController = TextEditingController();
-  final studentIdController = TextEditingController();
-  final classController = TextEditingController();
-  final programController = TextEditingController();
-  final guardianPhoneController = TextEditingController();
-
-  void saveStudent() {
-    if (fullNameController.text.trim().isEmpty ||
-        studentIdController.text.trim().isEmpty ||
-        classController.text.trim().isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please fill in name, student ID, and class'),
-        ),
-      );
-      return;
-    }
-
-    widget.onSave(
-      Student(
-        studentId: studentIdController.text.trim(),
-        fullName: fullNameController.text.trim(),
-        gender: '',
-        dateOfBirth: '',
-        phone: '',
-        email: '',
-        address: '',
-        faculty: '',
-        department: '',
-        programme: programController.text.trim(),
-        year: '',
-        semester: '',
-        studentClass: classController.text.trim(),
-        admissionNumber: '',
-        admissionDate: '',
-        status: 'Active',
-        guardianName: '',
-        guardianRelationship: '',
-        guardianPhone: guardianPhoneController.text.trim(),
-        guardianEmail: '',
-        guardianAddress: '',
-        faceRegistered: false,
-      ),
-    );
-
-    Navigator.pop(context);
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return AlertDialog(
-      title: const Text('Register Student'),
-      content: SizedBox(
-        width: 520,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            buildField(fullNameController, 'Full Name', Icons.person_rounded),
-            buildField(studentIdController, 'Student ID', Icons.badge_rounded),
-            buildField(classController, 'Class / Year', Icons.class_rounded),
-            buildField(
-              programController,
-              'Program / Grade',
-              Icons.school_rounded,
-            ),
-            buildField(
-              guardianPhoneController,
-              'Guardian Phone',
-              Icons.phone_rounded,
-            ),
-          ],
-        ),
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: const Text('Cancel'),
-        ),
-        ElevatedButton.icon(
-          onPressed: saveStudent,
-          icon: const Icon(Icons.save_rounded),
-          label: const Text('Save Student'),
-        ),
-      ],
-    );
-  }
-
-  Widget buildField(
-    TextEditingController controller,
-    String label,
-    IconData icon,
-  ) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 14),
-      child: TextField(
-        controller: controller,
-        decoration: InputDecoration(
-          labelText: label,
-          prefixIcon: Icon(icon),
-          filled: true,
-          fillColor: const Color(0xFFF7F9FC),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(14),
-            borderSide: BorderSide.none,
-          ),
-        ),
       ),
     );
   }
